@@ -246,12 +246,27 @@ void sort(double profile[][MONTHS], char* typeOfSort) {
 
 void forecast(double profile[][MONTHS], int monthsAhead) {
 	double savings = 0;
+	int activeMonths = 0;
 	for (size_t i = 0; i < MONTHS; i++)
 	{
-		if (profile[ACCOUNTINCOMEINDEX][i] != -1 && profile[ACCOUNTEXPENSESINDEX][i] != -1) {
-
+		double currentMonthIncome = profile[ACCOUNTINCOMEINDEX][i];
+		double currentMonthExpense = profile[ACCOUNTEXPENSESINDEX][i];
+		if (currentMonthIncome > DEFAULTEMPTYVALUE && currentMonthExpense > DEFAULTEMPTYVALUE) {
+			savings += currentMonthIncome - currentMonthExpense;
+			activeMonths++;
 		}
 	}
+	double averageMonthlyChange = savings / activeMonths;
+
+	std::cout << "Current savings: " << savings << std::endl;
+	std::cout << "Average monthly change: " << averageMonthlyChange << std::endl;
+	if (averageMonthlyChange < 0) {
+		std::cout << "Predicted savings after " << monthsAhead << " months: " << savings / -averageMonthlyChange << std::endl;
+	}
+	else {
+		std::cout << "Predicted savings after " << monthsAhead << " months: " << savings + monthsAhead * averageMonthlyChange << std::endl;
+	}
+
 }
 
 
@@ -265,12 +280,15 @@ int main() {
 	setupAccount(profile, activeMonths);
 	inputMonthValues(profile, 1, 2500, 1250);
 	inputMonthValues(profile, 2, 2400, 1350);
-	inputMonthValues(profile, 3, 2200, 2000);
+	inputMonthValues(profile, 3, 2200, 1900);
 
 
 	returnMonthlyReport(profile);
-	char string[] = "income";
+	char monthinput[] = "march";
+	search(monthinput, profile);
+	char string[] = "balance";
 	sort(profile, string);
+	forecast(profile, 6);
 
 
 
