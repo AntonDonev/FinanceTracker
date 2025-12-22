@@ -6,6 +6,11 @@ const int ACCOUNTEXPENSESINDEX = 1;
 const int ACCOUNTINCOMEINDEX = 0;
 const int NORMALIZEINPUTMONTHINDEX = 1;
 const int ACCOUNTROWS = 2;
+const int CONVERTTOPERCENTAGES = 100;
+const char* MONTHSNAMES[] = {
+		"January", "February", "March", "April", "May", "June",
+		"July", "August", "September", "October", "November", "December"
+};
 
 void setupAccount(double profile[][MONTHS], int inputMonths) {
 	for (size_t i = 0; i < MONTHS; i++)
@@ -22,7 +27,7 @@ void setupAccount(double profile[][MONTHS], int inputMonths) {
 	std::cout << "Profile created successfully" << std::endl;
 }
 
-void printMonth(int targetMonth) {
+void stringifyMonth(int targetMonth) {
 	switch (targetMonth) {
 	case 0: std::cout << "January"; break;
 	case 1: std::cout << "February"; break;
@@ -39,9 +44,28 @@ void printMonth(int targetMonth) {
 	}
 }
 
+int parseMonth(char* input) {
+	if (!input) return -1;
+	char* start = input;
+	for (size_t i = 0; i < MONTHS; i++)
+	{
+		input = start;
+		const char* currentMonth = MONTHSNAMES[i];
+		while (*input) {
+			if (*input != *currentMonth) {
+				break;
+			}
+			input++;
+			currentMonth++;
+		}
+		if (*currentMonth == *input) return i;
+	}
+	return -1;
+}
+
 void printResultForTargetMonth(int targetMonth, double income, double expense) {
 	std::cout << "Result: Balance for ";
-	printMonth(targetMonth);
+	stringifyMonth(targetMonth);
 	std::cout << ": " << income - expense << std::endl;
 }
 
@@ -69,7 +93,7 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 			totalIncome += currentMonthIncome;
 			totalExpenses += currentMonthExpenses;
 			activeMonths++;
-			printMonth(i);
+			stringifyMonth(i);
 			std::cout << " | " << currentMonthIncome << " | " << currentMonthExpenses << " | " << currentMonthIncome-currentMonthExpenses << std::endl;
 		}
 	}
@@ -81,7 +105,20 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 
 }
 
+void search(char* targetMonth, double profile[][MONTHS]) {
+	int parsedMonth = parseMonth(targetMonth);
+	if (parsedMonth == DEFAULTINACTIVEVALUE) {
+		std::cout << "Invalid month" << std::endl;
+		return;
+	}
+	double currentMonthIncome = profile[ACCOUNTINCOMEINDEX][parsedMonth];
+	double currentMonthExpense = profile[ACCOUNTEXPENSESINDEX][parsedMonth];
+	std::cout << "Income: " << currentMonthIncome << std::endl;
+	std::cout << "Expense: " << currentMonthExpense << std::endl;
+	std::cout << "Balance: " << currentMonthIncome-currentMonthExpense << std::endl;
+	std::cout << "Expense Ratio: " << (currentMonthExpense/currentMonthIncome)* CONVERTTOPERCENTAGES;
 
+}
 
 
 
@@ -94,10 +131,12 @@ int main() {
 	setupAccount(profile, activeMonths);
 	inputMonthValues(profile, 1, 2500, 1250);
 	inputMonthValues(profile, 2, 2400, 1350);
-	inputMonthValues(profile, 3, 2200, 1900);
+	inputMonthValues(profile, 3, 2200, 2000);
 
 
 	returnMonthlyReport(profile);
+	char string[] = "March";
+	search(string, profile);
 
 
 
