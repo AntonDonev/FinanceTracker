@@ -4,8 +4,10 @@ const int DEFAULTINACTIVEVALUE = -1;
 const int DEFAULTEMPTYVALUE = 0;
 const int ACCOUNTEXPENSESINDEX = 1;
 const int ACCOUNTINCOMEINDEX = 0;
+const int NORMALIZEINPUTMONTHINDEX = 1;
+const int ACCOUNTROWS = 2;
 
-void setupAccount(double profile[ACCOUNTEXPENSESINDEX][MONTHS], int inputMonths) {
+void setupAccount(double profile[][MONTHS], int inputMonths) {
 	for (size_t i = 0; i < MONTHS; i++)
 	{
 		if (i < inputMonths) {
@@ -44,6 +46,7 @@ void printResultForTargetMonth(int targetMonth, double income, double expense) {
 }
 
 void inputMonthValues(double profile[][MONTHS], int targetMonth, double income, double expense) {
+	targetMonth -= NORMALIZEINPUTMONTHINDEX;
 	double incomeMonth = profile[ACCOUNTINCOMEINDEX][targetMonth] += income;
 	double expenseMonth = profile[ACCOUNTEXPENSESINDEX][targetMonth] += expense;
 
@@ -70,6 +73,7 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 			std::cout << " | " << currentMonthIncome << " | " << currentMonthExpenses << " | " << currentMonthIncome-currentMonthExpenses << std::endl;
 		}
 	}
+	if (!activeMonths) return;
 	std::cout << "---------------------------------- \n";
 	std::cout << "Total income: " << totalIncome << std::endl;
 	std::cout << "Total expense: " << totalExpenses << std::endl;
@@ -84,11 +88,15 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 int main() {
 	// setupAccount
 
-	double profile[ACCOUNTEXPENSESINDEX][MONTHS];
+	double profile[ACCOUNTROWS][MONTHS];
 	int activeMonths;
 	std::cin >> activeMonths;
 	setupAccount(profile, activeMonths);
 	inputMonthValues(profile, 1, 2500, 1250);
+	inputMonthValues(profile, 2, 2400, 1350);
+	inputMonthValues(profile, 3, 2200, 1900);
+
+
 	returnMonthlyReport(profile);
 
 
