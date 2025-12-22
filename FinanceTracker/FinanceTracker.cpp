@@ -169,8 +169,6 @@ void byBalanceSort(double profile[][MONTHS]) {
 	double profileCopy[ACCOUNTROWS][MONTHS];
 	copyArray(profileCopy, profile);
 
-
-	std::cout << "Sorted by monthly balance (descending): \n";
 	for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
 	{
 		int index = 0;
@@ -193,12 +191,68 @@ void byBalanceSort(double profile[][MONTHS]) {
 
 }
 
-//void sort(double profile[][MONTHS], char* typeOfSort) {
-//	int parsedType = parseSortingType(typeOfSort);
-//	switch (parsedType) {
-//	case SORTINGBYEXPENSES: 
-//	}
-//}
+void sort(double profile[][MONTHS], char* typeOfSort) {
+	char signType = '+';
+	toUpper(typeOfSort);
+	int parsedType = parseSortingType(typeOfSort);
+	std::cout << "Sorted by monthly ";
+	double profileCopy[ACCOUNTROWS][MONTHS];
+	copyArray(profileCopy, profile);
+	switch (parsedType) {
+	case SORTINGBYEXPENSES: std::cout << "expenses (ascending): \n"; signType = '-';
+	case SORTINGBYINCOME:
+		if(parsedType == SORTINGBYINCOME) std::cout << "income (descending): \n";
+		for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
+		{
+			int index = 0;
+			double maxValue = profileCopy[parsedType][index];
+			for (size_t j = 0; j < MONTHS; j++)
+			{
+				double currentValue = profileCopy[parsedType][j];
+				if (currentValue > maxValue) {
+					maxValue = currentValue;
+					index = j;
+				}
+
+			}
+			stringifyMonth(index);
+			std::cout << ": " << signType << maxValue << std::endl;
+			profileCopy[parsedType][index] = -1;
+		}
+		break;
+	case SORTINGBYBALANCE: std::cout << "balance (descending): \n";
+		for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
+		{
+			int index = 0;
+			double maxBalance = profileCopy[ACCOUNTINCOMEINDEX][index] - profileCopy[ACCOUNTEXPENSESINDEX][index];
+			for (size_t j = 0; j < MONTHS; j++)
+			{
+				double currentBalance = profileCopy[ACCOUNTINCOMEINDEX][j] - profileCopy[ACCOUNTEXPENSESINDEX][j];
+				if (currentBalance > maxBalance) {
+					maxBalance = currentBalance;
+					index = j;
+				}
+
+			}
+			stringifyMonth(index);
+			std::cout << ": " << maxBalance << std::endl;
+			profileCopy[ACCOUNTINCOMEINDEX][index] = -1;
+			profileCopy[ACCOUNTEXPENSESINDEX][index] = -1;
+		}
+		break;
+	}
+
+}
+
+void forecast(double profile[][MONTHS], int monthsAhead) {
+	double savings = 0;
+	for (size_t i = 0; i < MONTHS; i++)
+	{
+		if (profile[ACCOUNTINCOMEINDEX][i] != -1 && profile[ACCOUNTEXPENSESINDEX][i] != -1) {
+
+		}
+	}
+}
 
 
 
@@ -215,9 +269,8 @@ int main() {
 
 
 	returnMonthlyReport(profile);
-	char string[] = "March";
-	search(string, profile);
-	byBalanceSort(profile);
+	char string[] = "income";
+	sort(profile, string);
 
 
 
