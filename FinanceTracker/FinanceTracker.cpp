@@ -7,9 +7,16 @@ const int ACCOUNTINCOMEINDEX = 0;
 const int NORMALIZEINPUTMONTHINDEX = 1;
 const int ACCOUNTROWS = 2;
 const int CONVERTTOPERCENTAGES = 100;
+const int SORTINGTYPESCOUNT = 3;
+const int SORTINGBYBALANCE = 2;
+const int SORTINGBYINCOME = 0;
+const int SORTINGBYEXPENSES = 1;
 const char* MONTHSNAMES[] = {
-		"January", "February", "March", "April", "May", "June",
-		"July", "August", "September", "October", "November", "December"
+		"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+		"JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+};
+const char* SORTINGTYPES[] = {
+		"INCOME", "EXPENSES", "BALANCE"
 };
 
 void setupAccount(double profile[][MONTHS], int inputMonths) {
@@ -42,6 +49,34 @@ void stringifyMonth(int targetMonth) {
 	case 10: std::cout << "November"; break;
 	case 11: std::cout << "December"; break;
 	}
+}
+
+void toUpper(char* input) {
+	if (!input) return;
+
+	while (*input) {
+		if (*input >= 'a' && *input <= 'z') *input = *input ^ ' ';
+		input++;
+	}
+}
+
+int parseSortingType(char* input) {
+	if (!input) return -1;
+	char* start = input;
+	for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
+	{
+		input = start;
+		const char* currentType = SORTINGTYPES[i];
+		while (*input) {
+			if (*input != *currentType) {
+				break;
+			}
+			input++;
+			currentType++;
+		}
+		if (*currentType == *input) return i;
+	}
+	return -1;
 }
 
 int parseMonth(char* input) {
@@ -106,6 +141,7 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 }
 
 void search(char* targetMonth, double profile[][MONTHS]) {
+	toUpper(targetMonth);
 	int parsedMonth = parseMonth(targetMonth);
 	if (parsedMonth == DEFAULTINACTIVEVALUE) {
 		std::cout << "Invalid month" << std::endl;
@@ -116,14 +152,58 @@ void search(char* targetMonth, double profile[][MONTHS]) {
 	std::cout << "Income: " << currentMonthIncome << std::endl;
 	std::cout << "Expense: " << currentMonthExpense << std::endl;
 	std::cout << "Balance: " << currentMonthIncome-currentMonthExpense << std::endl;
-	std::cout << "Expense Ratio: " << (currentMonthExpense/currentMonthIncome)* CONVERTTOPERCENTAGES;
+	std::cout << "Expense Ratio: " << (currentMonthExpense/currentMonthIncome)* CONVERTTOPERCENTAGES << std::endl;
 
 }
+
+void copyArray(double toCopy[][MONTHS], const double source[][MONTHS]) {
+	for (size_t i = 0; i < MONTHS; i++)
+	{
+		for (size_t j = 0; j < ACCOUNTROWS; j++)
+		{
+			toCopy[j][i] = source[j][i];
+		}
+	}
+}
+void byBalanceSort(double profile[][MONTHS]) {
+	double profileCopy[ACCOUNTROWS][MONTHS];
+	copyArray(profileCopy, profile);
+
+
+	std::cout << "Sorted by monthly balance (descending): \n";
+	for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
+	{
+		int index = 0;
+		double maxBalance = profileCopy[ACCOUNTINCOMEINDEX][index] - profileCopy[ACCOUNTEXPENSESINDEX][index];
+		for (size_t j = 0; j < MONTHS; j++)
+		{
+			double currentBalance = profileCopy[ACCOUNTINCOMEINDEX][j] - profileCopy[ACCOUNTEXPENSESINDEX][j];
+			if (currentBalance > maxBalance) {
+				maxBalance = currentBalance;
+				index = j;
+			}
+
+		}
+		stringifyMonth(index);
+		std::cout << ": " << maxBalance << std::endl;
+		profileCopy[ACCOUNTINCOMEINDEX][index] = -1;
+		profileCopy[ACCOUNTEXPENSESINDEX][index] = -1;
+
+	}
+
+}
+
+//void sort(double profile[][MONTHS], char* typeOfSort) {
+//	int parsedType = parseSortingType(typeOfSort);
+//	switch (parsedType) {
+//	case SORTINGBYEXPENSES: 
+//	}
+//}
 
 
 
 int main() {
-	// setupAccount
+	// demo
 
 	double profile[ACCOUNTROWS][MONTHS];
 	int activeMonths;
@@ -137,6 +217,7 @@ int main() {
 	returnMonthlyReport(profile);
 	char string[] = "March";
 	search(string, profile);
+	byBalanceSort(profile);
 
 
 
