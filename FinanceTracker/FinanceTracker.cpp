@@ -12,13 +12,22 @@ const int SORTINGBYBALANCE = 2;
 const int SORTINGBYINCOME = 0;
 const int SORTINGBYEXPENSES = 1;
 const int CHARTSTEPS = 5;
+const int COMMANDSCOUNT = 8;
+const int SETUPINDEX = 0;
+const int ADDINDEX = 1;
+const int REPORTINDEX = 2;
+const int SEARCHINDEX = 3;
+const int SORTINDEX = 4;
+const int FORECASTINDEX = 5;
+const int CHARTINDEX = 6;
+const int EXITINDEX = 7;
 const char* MONTHSNAMES[] = {
 		"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
 		"JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 };
 const char* COMMANDS[] = {
 		"SETUP", "ADD", "REPORT", "SEARCH", "SORT", "FORECAST",
-		"CHART"
+		"CHART", "EXIT"
 };
 const char* TYPES[] = {
 		"INCOME", "EXPENSES", "BALANCE"
@@ -105,6 +114,37 @@ int parseSortingType(char* input) {
 	return -1;
 }
 
+int parseChar(char*& input) {
+	if (!input || !*input) return -1;
+
+	int number = 0;
+	while (*input >= '0' && *input <= '9') {
+		number = (number * 10) + (*input - '0');
+		input++;
+	}
+
+	return number;
+}
+
+int parseCommand(char* &input) {
+	if (!input) return -1;
+	char* start = input;
+	for (size_t i = 0; i < COMMANDSCOUNT; i++)
+	{
+		input = start;
+		const char* currentType = COMMANDS[i];
+		while (*input && *input != ' ') {
+			if (*input != *currentType) {
+				break;
+			}
+			input++;
+			currentType++;
+		}
+		if (*currentType == *input) return i;
+	}
+	return -1;
+}
+
 int parseMonth(char* input) {
 	if (!input) return -1;
 	char* start = input;
@@ -130,17 +170,27 @@ void printResultForTargetMonth(int targetMonth, double income, double expense) {
 	std::cout << ": " << income - expense << std::endl;
 }
 
-void inputMonthValues(double profile[][MONTHS], int targetMonth, double income, double expense, int profileMonths) {
+void inputMonthValues(double profile[][MONTHS], int profileMonths) {
 	if (!validateProfile(profile)) {
 		std::cout << "Profile has not been created yet! \n";
 		return;
 	}
+	int targetMonth;
+	double income;
+	double expenses;
+
+	std::cout << "Enter month (1-12): ";
+	std::cin >> targetMonth;
+	std::cout << "Enter income: ";
+	std::cin >> income;
+	std::cout << "Enter expense: ";
+	std::cin >> expenses;
 	targetMonth -= NORMALIZEINPUTMONTHINDEX;
 	if (targetMonth < profileMonths) {
 		double incomeMonth = profile[ACCOUNTINCOMEINDEX][targetMonth] += income;
-		double expenseMonth = profile[ACCOUNTEXPENSESINDEX][targetMonth] += expense;
+		double expenseMonth = profile[ACCOUNTEXPENSESINDEX][targetMonth] += expenses;
 
-		printResultForTargetMonth(targetMonth, income, expense);
+		printResultForTargetMonth(targetMonth, income, expenses);
 		return;
 	}
 	std::cout << "Invalid month";
@@ -325,10 +375,9 @@ void chart(double profile[][MONTHS], char* typeOfChart) {
 	toUpper(typeOfChart);
 	int parsedType = parseSortingType(typeOfChart);
 	switch (parsedType) {
-	case SORTINGBYEXPENSES: std::cout << "=== YEARLY FINANCIAL ";
+	case SORTINGBYEXPENSES: std::cout << "=== YEARLY FINANCIAL EXPENSES CHART === \n \n";
 	case SORTINGBYINCOME:
-		if (parsedType == SORTINGBYINCOME) std::cout << "INCOME CHART === \n \n";
-		else std::cout << "EXPENSES CHART === \n \n";
+		if (parsedType == SORTINGBYINCOME) std::cout << "=== YEARLY FINANCIAL INCOME CHART === \n \n";
 		maxValue = profile[parsedType][0];
 		minValue = profile[parsedType][0];
 		for (size_t j = 0; j < MONTHS; j++)
@@ -400,6 +449,10 @@ void chart(double profile[][MONTHS], char* typeOfChart) {
 
 }
 
+void commandIteration(char* command, char*& ptr) {
+	std::cin >> command;
+	ptr = command;
+}
 
 
 int main() {
@@ -407,33 +460,47 @@ int main() {
 
 	int profileMonths = 0;
 	double profile[ACCOUNTROWS][MONTHS];
-	char string[] = "expenses";
-	char monthinput[] = "april";
-	sortByType(profile, string);
-	search(monthinput, profile, profileMonths);
-	returnMonthlyReport(profile);
-	forecast(profile, 6);
-	chart(profile, string);
+	char command[1024];
+	std::cin >> command;
+	while (true) {
+		toUpper(command);
+		char* commandPtr = command;
+		int commandIndex = parseCommand(commandPtr);
+
+		switch (commandIndex) {
+		case EXITINDEX: return 1;
+		case SETUPINDEX: std::cin >> profileMonths; setupAccount(profile, profileMonths); break;
+		case REPORTINDEX: returnMonthlyReport(profile); break;
+		case ADDINDEX: inputMonthValues(profile, profileMonths); break;
+		case SEARCHINDEX: commandIteration(command, commandPtr); search(commandPtr, profile, profileMonths);break;
+		case SORTINDEX: commandIteration(command, commandPtr); sortByType(profile, commandPtr);break;
+		case FORECASTINDEX: int forecastMonths; std::cin >> forecastMonths; forecast(profile, forecastMonths); break;
+		case CHARTINDEX: commandIteration(command, commandPtr); chart(profile, commandPtr); break;
+		default: std::cout << "Wrong command, valid commands are: exit, setup, add, report, search, sort, forecast, chart.\n";
+		}
+
+		std::cin >> command;
+	}
+	
 
 
 
 
 
-	std::cin >> profileMonths;
-	setupAccount(profile, profileMonths);
-	returnMonthlyReport(profile);
-	inputMonthValues(profile, 1, 2500, 1250, profileMonths);
-	inputMonthValues(profile, 2, 2400, 1350, profileMonths);
-	inputMonthValues(profile, 3, 2200, 1900, profileMonths);
+	//setupAccount(profile, profileMonths);
+	//returnMonthlyReport(profile);
+	//inputMonthValues(profile, 1, 2500, 1250, profileMonths);
+	//inputMonthValues(profile, 2, 2400, 1350, profileMonths);
+	//inputMonthValues(profile, 3, 2200, 1900, profileMonths);
 
 
-	returnMonthlyReport(profile);
+	//returnMonthlyReport(profile);
 
 
-	search(monthinput, profile, profileMonths);
-	sortByType(profile, string);
-	forecast(profile, 6);
-	chart(profile, string);
+	//search(monthinput, profile, profileMonths);
+	//sortByType(profile, string);
+	//forecast(profile, 6);
+	//chart(profile, string);
 
 
 
