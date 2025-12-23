@@ -456,8 +456,6 @@ void commandIteration(char* command, char*& ptr) {
 
 
 int main() {
-	// demo
-
 	int profileMonths = 0;
 	double profile[ACCOUNTROWS][MONTHS];
 	char command[1024];
@@ -481,28 +479,6 @@ int main() {
 
 		std::cin >> command;
 	}
-	
-
-
-
-
-
-	//setupAccount(profile, profileMonths);
-	//returnMonthlyReport(profile);
-	//inputMonthValues(profile, 1, 2500, 1250, profileMonths);
-	//inputMonthValues(profile, 2, 2400, 1350, profileMonths);
-	//inputMonthValues(profile, 3, 2200, 1900, profileMonths);
-
-
-	//returnMonthlyReport(profile);
-
-
-	//search(monthinput, profile, profileMonths);
-	//sortByType(profile, string);
-	//forecast(profile, 6);
-	//chart(profile, string);
-
-
 
 	return 1;
 }
