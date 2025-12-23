@@ -11,11 +11,12 @@ const int SORTINGTYPESCOUNT = 3;
 const int SORTINGBYBALANCE = 2;
 const int SORTINGBYINCOME = 0;
 const int SORTINGBYEXPENSES = 1;
+const int CHARTSTEPS = 5;
 const char* MONTHSNAMES[] = {
 		"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
 		"JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 };
-const char* SORTINGTYPES[] = {
+const char* TYPES[] = {
 		"INCOME", "EXPENSES", "BALANCE"
 };
 
@@ -51,6 +52,23 @@ void stringifyMonth(int targetMonth) {
 	}
 }
 
+void stringifyShortMonth(int targetMonth) {
+	switch (targetMonth) {
+	case 0: std::cout << "Jan"; break;
+	case 1: std::cout << "Feb"; break;
+	case 2: std::cout << "Mar"; break;
+	case 3: std::cout << "Apr"; break;
+	case 4: std::cout << "May"; break;
+	case 5: std::cout << "Jun"; break;
+	case 6: std::cout << "Jul"; break;
+	case 7: std::cout << "Aug"; break;
+	case 8: std::cout << "Sep"; break;
+	case 9: std::cout << "Oct"; break;
+	case 10: std::cout << "Nov"; break;
+	case 11: std::cout << "Dec"; break;
+	}
+}
+
 void toUpper(char* input) {
 	if (!input) return;
 
@@ -66,7 +84,7 @@ int parseSortingType(char* input) {
 	for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
 	{
 		input = start;
-		const char* currentType = SORTINGTYPES[i];
+		const char* currentType = TYPES[i];
 		while (*input) {
 			if (*input != *currentType) {
 				break;
@@ -269,6 +287,100 @@ void forecast(double profile[][MONTHS], int monthsAhead) {
 
 }
 
+void findMinMaxValueArray(double profile[][MONTHS], double& maxValue, double& minValue) {
+	maxValue = profile[ACCOUNTINCOMEINDEX][0]- profile[ACCOUNTEXPENSESINDEX][0];
+	minValue = profile[ACCOUNTINCOMEINDEX][0] - profile[ACCOUNTEXPENSESINDEX][0];
+	for (size_t i = 1; i < MONTHS; i++)
+	{
+		double income = profile[ACCOUNTINCOMEINDEX][i];
+		double expense = profile[ACCOUNTEXPENSESINDEX][i];
+		if (income != -1 && expense != -1) {
+			double balance = income - expense;
+			if (maxValue < balance) maxValue = balance;
+			if (minValue > balance) minValue = balance;
+		}
+	}
+}
+void chart(double profile[][MONTHS], char* typeOfChart) {
+	double maxValue = 0;
+	double minValue = 0;
+	toUpper(typeOfChart);
+	int parsedType = parseSortingType(typeOfChart);
+	switch (parsedType) {
+	case SORTINGBYEXPENSES: std::cout << "=== YEARLY FINANCIAL ";
+	case SORTINGBYINCOME:
+		if (parsedType == SORTINGBYINCOME) std::cout << "INCOME CHART === \n \n";
+		else std::cout << "EXPENSES CHART === \n \n";
+		maxValue = profile[parsedType][0];
+		minValue = profile[parsedType][0];
+		for (size_t j = 0; j < MONTHS; j++)
+		{
+			double currentValue = profile[parsedType][j];
+			if (currentValue > maxValue) maxValue = currentValue;
+			if (currentValue < minValue && minValue) minValue = currentValue;
+
+		}
+		break;
+	case SORTINGBYBALANCE: std::cout << "=== YEARLY FINANCIAL BALANCE CHART === \n \n";
+		maxValue = profile[ACCOUNTINCOMEINDEX][0] - profile[ACCOUNTEXPENSESINDEX][0];
+		minValue = profile[ACCOUNTINCOMEINDEX][0] - profile[ACCOUNTEXPENSESINDEX][0];
+		for (size_t j = 0; j < MONTHS; j++)
+		{
+
+			double currentValue = profile[ACCOUNTINCOMEINDEX][j] - profile[ACCOUNTEXPENSESINDEX][j];
+			if (currentValue > maxValue) maxValue = currentValue;
+			if (currentValue < minValue) minValue = currentValue;
+
+		}
+		break;
+	}
+
+	const double decrementValue = (maxValue - minValue) / CHARTSTEPS;
+	double treshold = maxValue;
+
+	for (size_t i = 0; i < CHARTSTEPS; i++)
+	{
+		int intTreshold = int(treshold);
+		if (intTreshold >= 1000) std::cout << " ";
+		else if (intTreshold >= 100) std::cout << "  ";
+		else if (intTreshold >= 10) std::cout << "   ";
+		else if (intTreshold >= 0) std::cout << "    ";
+		else if (intTreshold > -10) std::cout << "   ";
+		else if (intTreshold > -100) std::cout << "  ";
+		else std::cout << " ";
+
+		if (i == CHARTSTEPS-1) intTreshold = minValue;
+		std::cout << intTreshold << " |  ";
+		for (size_t j = 0; j < MONTHS; j++)
+		{
+			double income = profile[ACCOUNTINCOMEINDEX][j];
+			double expense = profile[ACCOUNTEXPENSESINDEX][j];
+			if (income != -1 && expense != -1) {
+				switch(parsedType) {
+				case SORTINGBYBALANCE: if (int(income-expense) >= treshold) std::cout << "#   "; else std::cout << "  ";break;
+				case SORTINGBYEXPENSES: if(int(expense) >= treshold) std::cout << "#   ";else std::cout << "  ";break;
+				case SORTINGBYINCOME: if(int(income) >= treshold) std::cout << "#   ";else std::cout << "  ";break;
+				}
+			}
+		}
+		std::cout << std::endl;
+		treshold -= decrementValue;
+	}
+	std::cout << "--------------------------- \n        ";
+	for (size_t i = 0; i < MONTHS; i++)
+	{
+		double income = profile[ACCOUNTINCOMEINDEX][i];
+		double expense = profile[ACCOUNTEXPENSESINDEX][i];
+		if (income > DEFAULTEMPTYVALUE && expense > DEFAULTEMPTYVALUE) {
+			stringifyShortMonth(i);
+			std::cout << " ";
+		}
+	}
+	std::cout << std::endl;
+
+
+}
+
 
 
 int main() {
@@ -286,9 +398,10 @@ int main() {
 	returnMonthlyReport(profile);
 	char monthinput[] = "march";
 	search(monthinput, profile);
-	char string[] = "balance";
+	char string[] = "expenses";
 	sort(profile, string);
 	forecast(profile, 6);
+	chart(profile, string);
 
 
 
