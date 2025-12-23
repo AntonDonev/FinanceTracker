@@ -16,23 +16,31 @@ const char* MONTHSNAMES[] = {
 		"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
 		"JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 };
+const char* COMMANDS[] = {
+		"SETUP", "ADD", "REPORT", "SEARCH", "SORT", "FORECAST",
+		"CHART"
+};
 const char* TYPES[] = {
 		"INCOME", "EXPENSES", "BALANCE"
 };
 
 void setupAccount(double profile[][MONTHS], int inputMonths) {
+
+	if (inputMonths <= 0) {
+		std::cout << "Invalid months amount. Must be a value between 1 and 12";
+		return;
+	}
 	for (size_t i = 0; i < MONTHS; i++)
 	{
-		if (i < inputMonths) {
-			profile[ACCOUNTINCOMEINDEX][i] = 0;
-			profile[ACCOUNTEXPENSESINDEX][i] = 0;
-			continue;
-		}
-		profile[ACCOUNTINCOMEINDEX][i] = -1;
-		profile[ACCOUNTEXPENSESINDEX][i] = -1;
-		
+		profile[ACCOUNTINCOMEINDEX][i] = 0;
+		profile[ACCOUNTEXPENSESINDEX][i] = 0;
 	}
 	std::cout << "Profile created successfully" << std::endl;
+}
+
+bool validateProfile(double profile[][MONTHS]) {
+	if (*profile[0] < DEFAULTEMPTYVALUE) return false;
+	return true;
 }
 
 void stringifyMonth(int targetMonth) {
@@ -122,15 +130,29 @@ void printResultForTargetMonth(int targetMonth, double income, double expense) {
 	std::cout << ": " << income - expense << std::endl;
 }
 
-void inputMonthValues(double profile[][MONTHS], int targetMonth, double income, double expense) {
+void inputMonthValues(double profile[][MONTHS], int targetMonth, double income, double expense, int profileMonths) {
+	if (!validateProfile(profile)) {
+		std::cout << "Profile has not been created yet! \n";
+		return;
+	}
 	targetMonth -= NORMALIZEINPUTMONTHINDEX;
-	double incomeMonth = profile[ACCOUNTINCOMEINDEX][targetMonth] += income;
-	double expenseMonth = profile[ACCOUNTEXPENSESINDEX][targetMonth] += expense;
+	if (targetMonth < profileMonths) {
+		double incomeMonth = profile[ACCOUNTINCOMEINDEX][targetMonth] += income;
+		double expenseMonth = profile[ACCOUNTEXPENSESINDEX][targetMonth] += expense;
 
-	printResultForTargetMonth(targetMonth, income, expense);
+		printResultForTargetMonth(targetMonth, income, expense);
+		return;
+	}
+	std::cout << "Invalid month";
+	
 }
 
 void returnMonthlyReport(double profile[][MONTHS]) {
+	if (!validateProfile(profile)) {
+		std::cout << "Profile has not been created yet! \n";
+		return;
+	}
+	std::cout << "---------------------------------- \n";
 	std::cout << "Month | Income | Expense | Balance \n";
 	std::cout << "---------------------------------- \n";
 	double totalIncome = 0;
@@ -150,7 +172,11 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 			std::cout << " | " << currentMonthIncome << " | " << currentMonthExpenses << " | " << currentMonthIncome-currentMonthExpenses << std::endl;
 		}
 	}
-	if (!activeMonths) return;
+	if (!activeMonths) {
+		std::cout << "No valid existing months. A valid month is a month with income and expense different than 0. \n";
+		std::cout << "---------------------------------- \n";
+		return;
+	}
 	std::cout << "---------------------------------- \n";
 	std::cout << "Total income: " << totalIncome << std::endl;
 	std::cout << "Total expense: " << totalExpenses << std::endl;
@@ -158,10 +184,14 @@ void returnMonthlyReport(double profile[][MONTHS]) {
 
 }
 
-void search(char* targetMonth, double profile[][MONTHS]) {
+void search(char* targetMonth, double profile[][MONTHS], int profileMonths) {
+	if (!validateProfile(profile)) {
+		std::cout << "Profile has not been created yet! \n";
+		return;
+	}
 	toUpper(targetMonth);
 	int parsedMonth = parseMonth(targetMonth);
-	if (parsedMonth == DEFAULTINACTIVEVALUE) {
+	if (parsedMonth == -1 || parsedMonth >= profileMonths) {
 		std::cout << "Invalid month" << std::endl;
 		return;
 	}
@@ -183,43 +213,21 @@ void copyArray(double toCopy[][MONTHS], const double source[][MONTHS]) {
 		}
 	}
 }
-void byBalanceSort(double profile[][MONTHS]) {
-	double profileCopy[ACCOUNTROWS][MONTHS];
-	copyArray(profileCopy, profile);
 
-	for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
-	{
-		int index = 0;
-		double maxBalance = profileCopy[ACCOUNTINCOMEINDEX][index] - profileCopy[ACCOUNTEXPENSESINDEX][index];
-		for (size_t j = 0; j < MONTHS; j++)
-		{
-			double currentBalance = profileCopy[ACCOUNTINCOMEINDEX][j] - profileCopy[ACCOUNTEXPENSESINDEX][j];
-			if (currentBalance > maxBalance) {
-				maxBalance = currentBalance;
-				index = j;
-			}
-
-		}
-		stringifyMonth(index);
-		std::cout << ": " << maxBalance << std::endl;
-		profileCopy[ACCOUNTINCOMEINDEX][index] = -1;
-		profileCopy[ACCOUNTEXPENSESINDEX][index] = -1;
-
+void sortByType(double profile[][MONTHS], char* typeOfSort) {
+	if (!validateProfile(profile)) {
+		std::cout << "Profile has not been created yet! \n";
+		return;
 	}
-
-}
-
-void sort(double profile[][MONTHS], char* typeOfSort) {
 	char signType = '+';
 	toUpper(typeOfSort);
 	int parsedType = parseSortingType(typeOfSort);
-	std::cout << "Sorted by monthly ";
 	double profileCopy[ACCOUNTROWS][MONTHS];
 	copyArray(profileCopy, profile);
 	switch (parsedType) {
-	case SORTINGBYEXPENSES: std::cout << "expenses (ascending): \n"; signType = '-';
+	case SORTINGBYEXPENSES: std::cout << "Sorted by monthly expenses (ascending): \n"; signType = '-';
 	case SORTINGBYINCOME:
-		if(parsedType == SORTINGBYINCOME) std::cout << "income (descending): \n";
+		if(parsedType == SORTINGBYINCOME) std::cout << "Sorted by monthly income (descending): \n";
 		for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
 		{
 			int index = 0;
@@ -238,7 +246,7 @@ void sort(double profile[][MONTHS], char* typeOfSort) {
 			profileCopy[parsedType][index] = -1;
 		}
 		break;
-	case SORTINGBYBALANCE: std::cout << "balance (descending): \n";
+	case SORTINGBYBALANCE: std::cout << "Sorted by monthly balance (descending): \n";
 		for (size_t i = 0; i < SORTINGTYPESCOUNT; i++)
 		{
 			int index = 0;
@@ -258,11 +266,17 @@ void sort(double profile[][MONTHS], char* typeOfSort) {
 			profileCopy[ACCOUNTEXPENSESINDEX][index] = -1;
 		}
 		break;
+	default: std::cout << "Invalid parseType. Valid options are: balance, income, expenses.";
 	}
+	
 
 }
 
 void forecast(double profile[][MONTHS], int monthsAhead) {
+	if (!validateProfile(profile)) {
+		std::cout << "Profile has not been created yet! \n";
+		return;
+	}
 	double savings = 0;
 	int activeMonths = 0;
 	for (size_t i = 0; i < MONTHS; i++)
@@ -302,6 +316,10 @@ void findMinMaxValueArray(double profile[][MONTHS], double& maxValue, double& mi
 	}
 }
 void chart(double profile[][MONTHS], char* typeOfChart) {
+	if (!validateProfile(profile)) {
+		std::cout << "Profile has not been created yet! \n";
+		return;
+	}
 	double maxValue = 0;
 	double minValue = 0;
 	toUpper(typeOfChart);
@@ -387,20 +405,33 @@ void chart(double profile[][MONTHS], char* typeOfChart) {
 int main() {
 	// demo
 
+	int profileMonths = 0;
 	double profile[ACCOUNTROWS][MONTHS];
-	int activeMonths;
-	std::cin >> activeMonths;
-	setupAccount(profile, activeMonths);
-	inputMonthValues(profile, 1, 2500, 1250);
-	inputMonthValues(profile, 2, 2400, 1350);
-	inputMonthValues(profile, 3, 2200, 1900);
+	char string[] = "expenses";
+	char monthinput[] = "april";
+	sortByType(profile, string);
+	search(monthinput, profile, profileMonths);
+	returnMonthlyReport(profile);
+	forecast(profile, 6);
+	chart(profile, string);
+
+
+
+
+
+	std::cin >> profileMonths;
+	setupAccount(profile, profileMonths);
+	returnMonthlyReport(profile);
+	inputMonthValues(profile, 1, 2500, 1250, profileMonths);
+	inputMonthValues(profile, 2, 2400, 1350, profileMonths);
+	inputMonthValues(profile, 3, 2200, 1900, profileMonths);
 
 
 	returnMonthlyReport(profile);
-	char monthinput[] = "march";
-	search(monthinput, profile);
-	char string[] = "expenses";
-	sort(profile, string);
+
+
+	search(monthinput, profile, profileMonths);
+	sortByType(profile, string);
 	forecast(profile, 6);
 	chart(profile, string);
 
