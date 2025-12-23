@@ -341,6 +341,8 @@ void chart(double profile[][MONTHS], char* typeOfChart) {
 	for (size_t i = 0; i < CHARTSTEPS; i++)
 	{
 		int intTreshold = int(treshold);
+		if (i == CHARTSTEPS - 1) intTreshold = minValue;
+
 		if (intTreshold >= 1000) std::cout << " ";
 		else if (intTreshold >= 100) std::cout << "  ";
 		else if (intTreshold >= 10) std::cout << "   ";
@@ -349,7 +351,6 @@ void chart(double profile[][MONTHS], char* typeOfChart) {
 		else if (intTreshold > -100) std::cout << "  ";
 		else std::cout << " ";
 
-		if (i == CHARTSTEPS-1) intTreshold = minValue;
 		std::cout << intTreshold << " |  ";
 		for (size_t j = 0; j < MONTHS; j++)
 		{
