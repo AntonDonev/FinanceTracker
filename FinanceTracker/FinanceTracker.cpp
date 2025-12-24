@@ -519,15 +519,37 @@ void runApplication() {
 		int commandIndex = parseCommand(commandPtr);
 
 		switch (commandIndex) {
-		case EXITINDEX: return;
-		case SETUPINDEX: std::cin >> profileMonths; setupAccount(profile, profileMonths); break;
-		case REPORTINDEX: returnMonthlyReport(profile); break;
-		case ADDINDEX: inputMonthValues(profile, profileMonths); break;
-		case SEARCHINDEX: commandIteration(command, commandPtr); search(commandPtr, profile, profileMonths);break;
-		case SORTINDEX: commandIteration(command, commandPtr); sortByType(profile, commandPtr);break;
-		case FORECASTINDEX: int forecastMonths; std::cin >> forecastMonths; forecast(profile, forecastMonths); break;
-		case CHARTINDEX: commandIteration(command, commandPtr); chart(profile, commandPtr); break;
-		default: std::cout << "Wrong command, valid commands are: exit, setup, add, report, search, sort, forecast, chart.\n";
+		case EXITINDEX: 
+			returnMonthlyReport(profile);
+			return;
+		case SETUPINDEX: 
+			std::cin >> profileMonths;
+			setupAccount(profile, profileMonths);
+			break;
+		case REPORTINDEX: 
+			returnMonthlyReport(profile);
+			break;
+		case ADDINDEX: 
+			inputMonthValues(profile, profileMonths);
+			break;
+		case SEARCHINDEX: 
+			commandIteration(command, commandPtr); 
+			search(commandPtr, profile, profileMonths);
+			break;
+		case SORTINDEX: 
+			commandIteration(command, commandPtr); 
+			sortByType(profile, commandPtr);
+			break;
+		case FORECASTINDEX: 
+			int forecastMonths; 
+			std::cin >> forecastMonths; 
+			forecast(profile, forecastMonths); break;
+		case CHARTINDEX: 
+			commandIteration(command, commandPtr); 
+			chart(profile, commandPtr); 
+			break;
+		default: 
+			std::cout << "Wrong command, valid commands are: exit, setup, add, report, search, sort, forecast, chart.\n";
 		}
 
 		std::cin >> command;
