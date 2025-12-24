@@ -1,3 +1,18 @@
+/**
+*
+* Solution to course project # 3
+* Introduction to programming course
+* Faculty of Mathematics and Informatics of Sofia University
+* Winter semester 2025/2026
+*
+* @author Anton Donev
+* @idnumber 9MI0600585
+* @compiler VC
+*
+* <Main implementation of the Finance Tracker project>
+*
+*/
+
 #include <iostream>
 const int MONTHS = 12;
 const int DEFAULTINACTIVEVALUE = -1;
@@ -53,36 +68,47 @@ bool validateProfile(double profile[][MONTHS]) {
 }
 
 void stringifyMonth(int targetMonth) {
-	switch (targetMonth) {
-	case 0: std::cout << "January"; break;
-	case 1: std::cout << "February"; break;
-	case 2: std::cout << "March"; break;
-	case 3: std::cout << "April"; break;
-	case 4: std::cout << "May"; break;
-	case 5: std::cout << "June"; break;
-	case 6: std::cout << "July"; break;
-	case 7: std::cout << "August"; break;
-	case 8: std::cout << "September"; break;
-	case 9: std::cout << "October"; break;
-	case 10: std::cout << "November"; break;
-	case 11: std::cout << "December"; break;
-	}
+	std::cout << MONTHSNAMES[targetMonth];
 }
 
 void stringifyShortMonth(int targetMonth) {
 	switch (targetMonth) {
-	case 0: std::cout << "Jan"; break;
-	case 1: std::cout << "Feb"; break;
-	case 2: std::cout << "Mar"; break;
-	case 3: std::cout << "Apr"; break;
-	case 4: std::cout << "May"; break;
-	case 5: std::cout << "Jun"; break;
-	case 6: std::cout << "Jul"; break;
-	case 7: std::cout << "Aug"; break;
-	case 8: std::cout << "Sep"; break;
-	case 9: std::cout << "Oct"; break;
-	case 10: std::cout << "Nov"; break;
-	case 11: std::cout << "Dec"; break;
+	case 0:
+		std::cout << "Jan";
+		break;
+	case 1:
+		std::cout << "Feb";
+		break;
+	case 2:
+		std::cout << "Mar";
+		break;
+	case 3:
+		std::cout << "Apr";
+		break;
+	case 4:
+		std::cout << "May";
+		break;
+	case 5:
+		std::cout << "Jun";
+		break;
+	case 6:
+		std::cout << "Jul";
+		break;
+	case 7:
+		std::cout << "Aug";
+		break;
+	case 8:
+		std::cout << "Sep";
+		break;
+	case 9:
+		std::cout << "Oct";
+		break;
+	case 10:
+		std::cout << "Nov";
+		break;
+	case 11:
+		std::cout << "Dec";
+		break;
 	}
 }
 
@@ -338,6 +364,10 @@ void forecast(double profile[][MONTHS], int monthsAhead) {
 			activeMonths++;
 		}
 	}
+	if (!activeMonths) {
+		std::cout << "No data for forecast. \n";
+		return;
+	}
 	double averageMonthlyChange = savings / activeMonths;
 
 	std::cout << "Current savings: " << savings << std::endl;
@@ -365,6 +395,7 @@ void findMinMaxValueArray(double profile[][MONTHS], double& maxValue, double& mi
 		}
 	}
 }
+
 void chart(double profile[][MONTHS], char* typeOfChart) {
 	if (!validateProfile(profile)) {
 		std::cout << "Profile has not been created yet! \n";
@@ -454,8 +485,7 @@ void commandIteration(char* command, char*& ptr) {
 	ptr = command;
 }
 
-
-int main() {
+void runApplication() {
 	int profileMonths = 0;
 	double profile[ACCOUNTROWS][MONTHS];
 	char command[1024];
@@ -466,7 +496,7 @@ int main() {
 		int commandIndex = parseCommand(commandPtr);
 
 		switch (commandIndex) {
-		case EXITINDEX: return 1;
+		case EXITINDEX: return;
 		case SETUPINDEX: std::cin >> profileMonths; setupAccount(profile, profileMonths); break;
 		case REPORTINDEX: returnMonthlyReport(profile); break;
 		case ADDINDEX: inputMonthValues(profile, profileMonths); break;
@@ -479,6 +509,8 @@ int main() {
 
 		std::cin >> command;
 	}
-
-	return 1;
+}
+int main() {
+	runApplication();
+	return 0;
 }
