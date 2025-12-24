@@ -62,6 +62,14 @@ void setupAccount(double profile[][MONTHS], int inputMonths) {
 	std::cout << "Profile created successfully" << std::endl;
 }
 
+void invalidateProfile(double profile[][MONTHS]) {
+	for (size_t i = 0; i < MONTHS; i++)
+	{
+		profile[ACCOUNTEXPENSESINDEX][i] = DEFAULTINACTIVEVALUE;
+		profile[ACCOUNTINCOMEINDEX][i] = DEFAULTINACTIVEVALUE;
+	}
+}
+
 bool validateProfile(double profile[][MONTHS]) {
 	if (*profile[0] < DEFAULTEMPTYVALUE) return false;
 	return true;
@@ -276,8 +284,13 @@ void search(char* targetMonth, double profile[][MONTHS], int profileMonths) {
 	std::cout << "Income: " << currentMonthIncome << std::endl;
 	std::cout << "Expense: " << currentMonthExpense << std::endl;
 	std::cout << "Balance: " << currentMonthIncome-currentMonthExpense << std::endl;
-	std::cout << "Expense Ratio: " << (currentMonthExpense/currentMonthIncome)* CONVERTTOPERCENTAGES << std::endl;
 
+	if (currentMonthIncome != 0) {
+		std::cout << "Expense Ratio: " << (currentMonthExpense / currentMonthIncome) * CONVERTTOPERCENTAGES << "%" << std::endl;
+	}
+	else {
+		std::cout << "Expense Ratio: N/A (Income is 0)" << std::endl;
+	}
 }
 
 void copyArray(double toCopy[][MONTHS], const double source[][MONTHS]) {
@@ -456,9 +469,18 @@ void chart(double profile[][MONTHS], char* typeOfChart) {
 			double expense = profile[ACCOUNTEXPENSESINDEX][j];
 			if (income != -1 && expense != -1) {
 				switch(parsedType) {
-				case SORTINGBYBALANCE: if (int(income-expense) >= treshold) std::cout << "#   "; else std::cout << "  ";break;
-				case SORTINGBYEXPENSES: if(int(expense) >= treshold) std::cout << "#   ";else std::cout << "  ";break;
-				case SORTINGBYINCOME: if(int(income) >= treshold) std::cout << "#   ";else std::cout << "  ";break;
+				case SORTINGBYBALANCE: 
+					if (int(income-expense) >= treshold) std::cout << "#   ";
+					else std::cout << "  ";
+					break;
+				case SORTINGBYEXPENSES:
+					if(int(expense) >= treshold) std::cout << "#   ";
+					else std::cout << "  ";
+					break;
+				case SORTINGBYINCOME:
+					if(int(income) >= treshold) std::cout << "#   ";
+					else std::cout << "  ";
+					break;
 				}
 			}
 		}
@@ -488,6 +510,7 @@ void commandIteration(char* command, char*& ptr) {
 void runApplication() {
 	int profileMonths = 0;
 	double profile[ACCOUNTROWS][MONTHS];
+	invalidateProfile(profile);
 	char command[1024];
 	std::cin >> command;
 	while (true) {
